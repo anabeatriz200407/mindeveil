@@ -1,0 +1,752 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0"/>
+<title>UniVerse</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel+Decorative:wght@400;700&family=Nunito:ital,wght@0,300;0,400;0,600;0,700;1,300&display=swap" rel="stylesheet"/>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<style>
+:root {
+  --bg: #080008;
+  --pink: #ff3fa4;
+  --pink-soft: #ff80c8;
+  --pink-glow: rgba(255,63,164,0.3);
+  --purple: #7b2fff;
+  --purple-soft: #b57bff;
+  --purple-glow: rgba(123,47,255,0.3);
+  --text: #f0d6ec;
+  --text-dim: #7a5a76;
+  --text-mid: #b08aaa;
+  --border: rgba(255,63,164,0.15);
+  --nav-h: 88px;
+  --header-h: 60px;
+}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;}
+html,body{height:100%;overflow:hidden;background:var(--bg);}
+body{font-family:'Nunito',sans-serif;color:var(--text);}
+
+#bg-layer{position:fixed;inset:0;z-index:0;pointer-events:none;}
+#bg-layer::before{content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse 70% 50% at 15% 10%,rgba(123,47,255,0.15) 0%,transparent 65%),
+    radial-gradient(ellipse 60% 60% at 85% 90%,rgba(255,63,164,0.12) 0%,transparent 65%);
+  animation:bgP 8s ease-in-out infinite alternate;}
+@keyframes bgP{from{opacity:1}to{opacity:0.6;filter:hue-rotate(15deg)}}
+
+#stars{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden;}
+.star{position:absolute;border-radius:50%;background:white;animation:twk var(--d,3s) ease-in-out infinite;}
+@keyframes twk{0%,100%{opacity:0.1}50%{opacity:0.85}}
+
+#app{position:relative;z-index:1;display:flex;flex-direction:column;height:100vh;
+  max-width:480px;margin:0 auto;background:rgba(8,0,8,0.6);
+  border-left:1px solid var(--border);border-right:1px solid var(--border);}
+
+/* HEADER */
+.app-header{height:var(--header-h);flex-shrink:0;display:flex;align-items:center;gap:12px;
+  padding:0 18px;border-bottom:1px solid var(--border);
+  background:rgba(8,0,8,0.9);backdrop-filter:blur(20px);position:relative;z-index:10;}
+.app-header .logo{width:34px;height:34px;flex-shrink:0;
+  filter:drop-shadow(0 0 8px var(--pink));animation:fly 4s ease-in-out infinite;}
+@keyframes fly{0%,100%{transform:translateY(0)}50%{transform:translateY(-4px)}}
+.app-header h1{font-family:'Cinzel Decorative',serif;font-size:1.1rem;
+  background:linear-gradient(90deg,var(--pink),var(--purple-soft),var(--pink-soft));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;letter-spacing:2px;}
+.header-sub{font-size:0.62rem;color:var(--text-dim);letter-spacing:1.5px;margin-top:1px;}
+
+/* PAGES */
+.page{flex:1;overflow:hidden;display:none;flex-direction:column;min-height:0;}
+.page.active{display:flex;}
+
+/* HOME */
+#page-home{overflow-y:auto;padding:18px 16px 20px;}
+#page-home::-webkit-scrollbar{width:3px;}
+#page-home::-webkit-scrollbar-thumb{background:var(--purple);border-radius:3px;}
+
+.home-banner{border-radius:20px;padding:22px 18px;margin-bottom:18px;
+  background:linear-gradient(135deg,rgba(123,47,255,0.18),rgba(255,63,164,0.13));
+  border:1px solid rgba(255,63,164,0.2);text-align:center;position:relative;overflow:hidden;}
+.home-banner::after{content:'✦';position:absolute;top:10px;right:14px;
+  font-size:1.4rem;color:var(--pink);opacity:0.35;animation:spin 7s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg)}}
+.hb-emoji{font-size:2.8rem;display:block;margin-bottom:8px;animation:fly 3s ease-in-out infinite;}
+.home-banner h2{font-family:'Cinzel Decorative',serif;font-size:0.95rem;
+  background:linear-gradient(90deg,var(--pink),var(--purple-soft));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.home-banner p{font-size:0.76rem;color:var(--text-mid);margin-top:6px;line-height:1.6;}
+
+.sec-title{font-size:0.66rem;text-transform:uppercase;letter-spacing:2px;
+  color:var(--text-dim);margin-bottom:10px;padding-left:2px;}
+
+.quick-grid{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-bottom:18px;}
+.qcard{border-radius:16px;padding:15px 13px;background:rgba(255,255,255,0.04);
+  border:1px solid var(--border);cursor:pointer;transition:all 0.3s;
+  display:flex;flex-direction:column;gap:7px;}
+.qcard:active{background:rgba(255,63,164,0.1);border-color:rgba(255,63,164,0.3);
+  transform:scale(0.97);box-shadow:0 6px 20px var(--pink-glow);}
+.qc-em{font-size:1.5rem;}
+.qc-t{font-size:0.82rem;font-weight:700;color:var(--text);}
+.qc-d{font-size:0.68rem;color:var(--text-dim);line-height:1.5;}
+
+.rc-list{display:flex;flex-direction:column;gap:8px;}
+.rc-item{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:14px;
+  background:rgba(255,255,255,0.04);border:1px solid var(--border);
+  cursor:pointer;transition:all 0.3s;}
+.rc-item:active{background:rgba(123,47,255,0.14);border-color:rgba(123,47,255,0.35);}
+.rc-av{width:42px;height:42px;border-radius:50%;flex-shrink:0;
+  background:linear-gradient(135deg,#e0007a,var(--purple));
+  display:flex;align-items:center;justify-content:center;
+  font-size:1.2rem;box-shadow:0 0 12px var(--purple-glow);}
+.rc-name{font-size:0.88rem;font-weight:700;}
+.rc-sub{font-size:0.68rem;color:var(--text-dim);margin-top:2px;}
+.rc-arr{margin-left:auto;color:var(--text-dim);}
+.empty-note{text-align:center;padding:24px;color:var(--text-dim);font-size:0.8rem;line-height:1.8;}
+.empty-note .en-em{font-size:2.2rem;display:block;margin-bottom:8px;}
+
+/* CHAT */
+#page-chat{overflow:hidden;}
+.chat-top{display:flex;align-items:center;gap:12px;padding:11px 16px;
+  border-bottom:1px solid var(--border);background:rgba(8,0,8,0.88);
+  backdrop-filter:blur(12px);flex-shrink:0;}
+.back-btn{background:none;border:none;color:var(--text-mid);font-size:1.2rem;
+  cursor:pointer;padding:4px 8px 4px 0;}
+.ct-av{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#e0007a,var(--purple));
+  display:flex;align-items:center;justify-content:center;font-size:1rem;
+  box-shadow:0 0 10px var(--purple-glow);flex-shrink:0;}
+.ct-name{font-size:0.9rem;font-weight:700;}
+.ct-status{font-size:0.66rem;color:var(--pink-soft);margin-top:1px;}
+
+.msgs{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:12px;min-height:0;}
+.msgs::-webkit-scrollbar{width:3px;}
+.msgs::-webkit-scrollbar-thumb{background:linear-gradient(var(--pink),var(--purple));border-radius:3px;}
+
+.msg{display:flex;gap:9px;animation:mIn 0.32s ease;}
+@keyframes mIn{from{opacity:0;transform:translateY(9px)}to{opacity:1;transform:translateY(0)}}
+.msg.user{flex-direction:row-reverse;}
+.mav{width:30px;height:30px;border-radius:50%;flex-shrink:0;align-self:flex-end;
+  display:flex;align-items:center;justify-content:center;font-size:0.85rem;
+  background:linear-gradient(135deg,#e0007a,var(--purple));box-shadow:0 0 8px var(--purple-glow);}
+.msg.user .mav{background:linear-gradient(135deg,var(--pink),#e0007a);box-shadow:0 0 8px var(--pink-glow);}
+.mbody{display:flex;flex-direction:column;gap:2px;max-width:78%;}
+.msg.user .mbody{align-items:flex-end;}
+.mname{font-size:0.62rem;color:var(--text-dim);letter-spacing:0.5px;font-weight:600;}
+.bbl{padding:10px 13px;border-radius:17px;font-size:0.84rem;line-height:1.65;}
+.msg.ai .bbl{background:rgba(123,47,255,0.12);border:1px solid rgba(123,47,255,0.22);border-bottom-left-radius:4px;}
+.msg.user .bbl{background:linear-gradient(135deg,rgba(255,63,164,0.18),rgba(123,47,255,0.14));
+  border:1px solid rgba(255,63,164,0.24);border-bottom-right-radius:4px;}
+.tdots{display:flex;gap:4px;align-items:center;padding:2px 0;}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--purple-soft);animation:bnc 1.2s ease-in-out infinite;}
+.dot:nth-child(2){animation-delay:.2s;background:var(--pink-soft);}
+.dot:nth-child(3){animation-delay:.4s;}
+@keyframes bnc{0%,60%,100%{transform:translateY(0)}30%{transform:translateY(-8px)}}
+
+.inp-bar{padding:9px 13px;border-top:1px solid var(--border);
+  background:rgba(8,0,8,0.9);backdrop-filter:blur(16px);
+  display:flex;gap:9px;align-items:flex-end;flex-shrink:0;}
+.inp-ta{flex:1;background:rgba(255,255,255,0.06);border:1px solid var(--border);border-radius:20px;
+  padding:10px 15px;color:var(--text);font-family:'Nunito',sans-serif;font-size:0.85rem;
+  resize:none;outline:none;line-height:1.5;min-height:40px;max-height:100px;transition:border-color 0.3s;}
+.inp-ta::placeholder{color:var(--text-dim);}
+.inp-ta:focus{border-color:var(--purple-soft);box-shadow:0 0 10px var(--purple-glow);}
+.snd-btn{width:40px;height:40px;border-radius:50%;border:none;
+  background:linear-gradient(135deg,var(--pink),var(--purple));
+  color:white;cursor:pointer;font-size:1rem;display:flex;align-items:center;justify-content:center;
+  transition:all 0.3s;flex-shrink:0;box-shadow:0 0 14px var(--pink-glow);}
+.snd-btn:active{transform:scale(0.92);}
+.snd-btn:disabled{opacity:0.4;cursor:not-allowed;}
+
+/* FANFIC */
+#page-fanfic{overflow:hidden;}
+.fanfic-top{padding:10px 14px;border-bottom:1px solid var(--border);
+  background:rgba(8,0,8,0.88);backdrop-filter:blur(12px);flex-shrink:0;}
+.fanfic-top .ftlabel{font-size:0.65rem;text-transform:uppercase;letter-spacing:1.5px;
+  color:var(--text-dim);margin-bottom:7px;}
+.gpills{display:flex;gap:6px;flex-wrap:wrap;}
+.gpill{padding:5px 12px;border-radius:11px;border:1px solid var(--border);
+  background:transparent;color:var(--text-dim);font-size:0.72rem;cursor:pointer;
+  transition:all 0.2s;font-family:'Nunito',sans-serif;}
+.gpill.active,.gpill:active{border-color:var(--purple-soft);color:var(--purple-soft);
+  background:rgba(123,47,255,0.12);box-shadow:0 0 8px var(--purple-glow);}
+
+/* CHARACTERS */
+#page-characters{overflow-y:auto;padding:16px;}
+#page-characters::-webkit-scrollbar{width:3px;}
+#page-characters::-webkit-scrollbar-thumb{background:var(--purple);border-radius:3px;}
+.chars-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;}
+.chars-hd h2{font-family:'Cinzel Decorative',serif;font-size:0.88rem;
+  background:linear-gradient(90deg,var(--pink),var(--purple-soft));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.add-btn{display:flex;align-items:center;gap:5px;padding:8px 16px;border-radius:20px;
+  background:linear-gradient(135deg,var(--pink),var(--purple));
+  color:white;border:none;cursor:pointer;font-family:'Nunito',sans-serif;font-size:0.76rem;font-weight:700;
+  box-shadow:0 0 14px var(--pink-glow);transition:all 0.3s;}
+.add-btn:active{transform:scale(0.95);}
+.clist{display:flex;flex-direction:column;gap:9px;}
+.ccard{display:flex;align-items:center;gap:13px;padding:13px 15px;border-radius:16px;
+  background:rgba(255,255,255,0.04);border:1px solid var(--border);cursor:pointer;transition:all 0.3s;}
+.ccard:active{background:rgba(123,47,255,0.14);border-color:rgba(123,47,255,0.35);}
+.cav{width:46px;height:46px;border-radius:50%;flex-shrink:0;
+  background:linear-gradient(135deg,#e0007a,var(--purple));
+  display:flex;align-items:center;justify-content:center;font-size:1.3rem;
+  box-shadow:0 0 12px var(--purple-glow);}
+.cname{font-size:0.9rem;font-weight:700;}
+.ctype{font-size:0.7rem;color:var(--text-dim);margin-top:3px;}
+.ctag{display:inline-block;margin-top:5px;padding:2px 9px;border-radius:8px;font-size:0.63rem;
+  background:rgba(255,63,164,0.12);border:1px solid rgba(255,63,164,0.2);color:var(--pink-soft);}
+.cdel{margin-left:auto;background:none;border:none;color:var(--text-dim);cursor:pointer;
+  font-size:0.95rem;padding:6px;border-radius:8px;transition:all 0.2s;opacity:0.5;}
+.cdel:hover{color:var(--pink);opacity:1;background:rgba(255,63,164,0.1);}
+.empty-st{text-align:center;padding:36px 16px;color:var(--text-dim);font-size:0.82rem;line-height:1.8;}
+.empty-st span{font-size:2.8rem;display:block;margin-bottom:10px;}
+
+/* EXPORT BTN */
+.export-btn{background:none;border:none;color:var(--text-dim);cursor:pointer;
+  padding:6px 8px;border-radius:10px;font-size:1.1rem;transition:all 0.2s;margin-left:auto;}
+.export-btn:hover,.export-btn:active{color:var(--pink-soft);background:rgba(255,63,164,0.1);}
+
+/* EXPORT TOAST */
+.toast{position:fixed;bottom:90px;left:50%;transform:translateX(-50%) translateY(20px);
+  background:linear-gradient(135deg,var(--pink),var(--purple));
+  color:white;padding:10px 22px;border-radius:20px;font-size:0.8rem;font-weight:600;
+  z-index:200;opacity:0;transition:all 0.4s;pointer-events:none;white-space:nowrap;}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+/* EXPORT CARD (hidden, used for screenshot) */
+#export-card{
+  position:fixed;left:-9999px;top:0;width:420px;
+  background:#0a0008;padding:0;border-radius:20px;overflow:hidden;
+  font-family:'Nunito',sans-serif;
+}
+.ec-header{
+  background:linear-gradient(135deg,rgba(123,47,255,0.3),rgba(255,63,164,0.2));
+  padding:16px 18px;display:flex;align-items:center;gap:10px;
+  border-bottom:1px solid rgba(255,63,164,0.2);
+}
+.ec-av{width:40px;height:40px;border-radius:50%;background:linear-gradient(135deg,#e0007a,#7b2fff);
+  display:flex;align-items:center;justify-content:center;font-size:1.2rem;}
+.ec-title{font-size:0.95rem;font-weight:700;color:#f0d6ec;}
+.ec-sub{font-size:0.65rem;color:#b57bff;margin-top:2px;letter-spacing:1px;}
+.ec-logo{margin-left:auto;font-size:0.7rem;color:rgba(255,63,164,0.6);letter-spacing:1px;}
+.ec-msgs{padding:14px 16px;display:flex;flex-direction:column;gap:10px;background:#0a0008;}
+.ec-msg{display:flex;gap:8px;}
+.ec-msg.user{flex-direction:row-reverse;}
+.ec-mav{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,#e0007a,#7b2fff);
+  display:flex;align-items:center;justify-content:center;font-size:0.8rem;flex-shrink:0;align-self:flex-end;}
+.ec-msg.user .ec-mav{background:linear-gradient(135deg,#ff3fa4,#e0007a);}
+.ec-mbody{display:flex;flex-direction:column;gap:2px;max-width:80%;}
+.ec-msg.user .ec-mbody{align-items:flex-end;}
+.ec-mname{font-size:0.6rem;color:#7a5a76;font-weight:600;margin-bottom:1px;}
+.ec-bbl{padding:9px 12px;border-radius:15px;font-size:0.8rem;line-height:1.6;color:#f0d6ec;}
+.ec-msg.ai .ec-bbl{background:rgba(123,47,255,0.18);border:1px solid rgba(123,47,255,0.25);border-bottom-left-radius:3px;}
+.ec-msg.user .ec-bbl{background:linear-gradient(135deg,rgba(255,63,164,0.2),rgba(123,47,255,0.15));border:1px solid rgba(255,63,164,0.25);border-bottom-right-radius:3px;}
+.ec-footer{padding:10px 16px;text-align:center;
+  background:linear-gradient(180deg,transparent,rgba(123,47,255,0.1));
+  font-size:0.62rem;color:rgba(255,63,164,0.5);letter-spacing:1.5px;}
+
+/* BOTTOM NAV */
+.bnav{height:var(--nav-h);flex-shrink:0;display:flex;align-items:center;
+  border-top:1px solid var(--border);background:rgba(5,0,5,0.96);
+  backdrop-filter:blur(20px);position:relative;z-index:10;padding:0 6px;}
+.ni{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:5px;padding:10px 0;cursor:pointer;background:none;border:none;color:var(--text-dim);
+  font-family:'Nunito',sans-serif;font-size:0.68rem;letter-spacing:0.5px;transition:all 0.2s;}
+.ni .nic{font-size:1.7rem;transition:transform 0.2s;}
+.ni.active{color:var(--pink-soft);}
+.ni.active .nic{transform:scale(1.15);}
+.nbadge{position:absolute;top:5px;left:calc(50% + 3px);
+  width:7px;height:7px;border-radius:50%;background:var(--pink);border:2px solid #050005;}
+.ncenter{flex:0 0 64px;width:64px;height:64px;border-radius:50%;border:none;
+  background:white;color:#111;font-size:1.8rem;cursor:pointer;margin:0 4px;
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 0 18px rgba(255,255,255,0.2),0 0 36px var(--purple-glow);
+  transition:all 0.3s;flex-shrink:0;}
+.ncenter:active{transform:scale(0.94);}
+
+/* MODAL */
+.overlay{position:fixed;inset:0;z-index:100;background:rgba(0,0,0,0.87);
+  backdrop-filter:blur(8px);display:flex;align-items:flex-end;justify-content:center;
+  opacity:0;pointer-events:none;transition:opacity 0.3s;}
+.overlay.open{opacity:1;pointer-events:all;}
+.modal{background:linear-gradient(180deg,#120010,#0c000f);
+  border:1px solid rgba(123,47,255,0.28);border-radius:28px 28px 0 0;
+  padding:24px 18px 30px;width:100%;max-width:480px;max-height:90vh;overflow-y:auto;
+  transform:translateY(100%);transition:transform 0.4s cubic-bezier(.16,1,.3,1);
+  box-shadow:0 -20px 60px var(--purple-glow),0 -5px 20px var(--pink-glow);}
+.overlay.open .modal{transform:translateY(0);}
+.modal-handle{width:38px;height:4px;border-radius:2px;background:rgba(255,255,255,0.14);margin:0 auto 18px;}
+.modal h2{font-family:'Cinzel Decorative',serif;font-size:0.95rem;
+  background:linear-gradient(90deg,var(--pink),var(--purple-soft));
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  text-align:center;margin-bottom:18px;}
+.fg{margin-bottom:13px;}
+.fg label{display:block;font-size:0.7rem;color:var(--text-dim);margin-bottom:5px;letter-spacing:0.5px;}
+.fg input,.fg select,.fg textarea{width:100%;background:rgba(255,255,255,0.06);
+  border:1px solid var(--border);border-radius:12px;padding:10px 13px;color:var(--text);
+  font-family:'Nunito',sans-serif;font-size:0.84rem;outline:none;transition:border-color 0.3s;}
+.fg textarea{resize:vertical;min-height:65px;}
+.fg input:focus,.fg select:focus,.fg textarea:focus{border-color:var(--purple-soft);box-shadow:0 0 10px var(--purple-glow);}
+.fg select option{background:#120010;}
+.egrid{display:flex;flex-wrap:wrap;gap:7px;}
+.ebtn{width:38px;height:38px;border-radius:10px;border:1px solid var(--border);background:transparent;
+  font-size:1.15rem;cursor:pointer;transition:all 0.2s;display:flex;align-items:center;justify-content:center;}
+.ebtn.sel,.ebtn:active{border-color:var(--purple-soft);background:rgba(123,47,255,0.18);
+  transform:scale(1.12);box-shadow:0 0 10px var(--purple-glow);}
+.mactions{display:flex;gap:9px;margin-top:16px;}
+.mcancl{flex:1;padding:12px;border-radius:13px;border:1px solid var(--border);
+  background:transparent;color:var(--text-dim);cursor:pointer;
+  font-family:'Nunito',sans-serif;font-size:0.84rem;transition:all 0.2s;}
+.mcancl:hover{border-color:var(--pink);color:var(--pink);}
+.mcreate{flex:2;padding:12px;border-radius:13px;border:none;
+  background:linear-gradient(135deg,var(--pink),var(--purple));color:white;
+  cursor:pointer;font-family:'Nunito',sans-serif;font-size:0.84rem;font-weight:700;
+  box-shadow:0 0 16px var(--pink-glow);transition:all 0.3s;}
+.mcreate:active{transform:scale(0.97);}
+
+/* AVATAR TABS */
+.avatar-tabs{display:flex;gap:8px;margin-bottom:12px;}
+.av-tab{flex:1;padding:8px;border-radius:12px;border:1px solid var(--border);
+  background:transparent;color:var(--text-dim);font-family:'Nunito',sans-serif;
+  font-size:0.76rem;cursor:pointer;transition:all 0.2s;}
+.av-tab.active{border-color:var(--purple-soft);color:var(--purple-soft);
+  background:rgba(123,47,255,0.15);box-shadow:0 0 8px var(--purple-glow);}
+
+.photo-upload-area{border:2px dashed var(--border);border-radius:16px;
+  padding:20px;text-align:center;cursor:pointer;transition:all 0.3s;min-height:100px;
+  display:flex;align-items:center;justify-content:center;}
+.photo-upload-area:hover,.photo-upload-area:active{
+  border-color:var(--pink-soft);background:rgba(255,63,164,0.06);}
+.photo-placeholder{display:flex;flex-direction:column;align-items:center;}
+.photo-preview{width:90px;height:90px;border-radius:50%;object-fit:cover;
+  border:3px solid var(--purple-soft);box-shadow:0 0 16px var(--purple-glow);}
+.photo-change-hint{font-size:0.68rem;color:var(--text-dim);margin-top:8px;}
+
+/* Avatar image in chat */
+.mav img,.rc-av img,.ct-av img,.cav img,.ec-mav img{
+  width:100%;height:100%;object-fit:cover;border-radius:50%;}
+</style>
+</head>
+<body>
+<div id="bg-layer"></div>
+<div id="stars"></div>
+
+<div id="app">
+  <header class="app-header">
+    <svg class="logo" viewBox="0 0 100 100" fill="none">
+      <defs>
+        <linearGradient id="ug" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0%" stop-color="#ff3fa4"/><stop offset="100%" stop-color="#7b2fff"/>
+        </linearGradient>
+      </defs>
+      <ellipse cx="52" cy="65" rx="28" ry="20" fill="#f5d6f0"/>
+      <ellipse cx="72" cy="45" rx="18" ry="16" fill="#f5d6f0"/>
+      <polygon points="80,18 72,42 88,42" fill="url(#ug)" opacity=".9"/>
+      <polygon points="62,32 57,22 68,28" fill="url(#ug)"/>
+      <circle cx="78" cy="43" r="3" fill="#7b2fff"/><circle cx="79" cy="42" r="1" fill="white"/>
+      <path d="M62 32 Q55 50 50 65" stroke="url(#ug)" stroke-width="5" stroke-linecap="round" fill="none"/>
+      <path d="M65 30 Q60 48 55 63" stroke="#ff80c8" stroke-width="3" stroke-linecap="round" fill="none" opacity=".6"/>
+      <rect x="36" y="82" width="8" height="13" rx="4" fill="#f5d6f0"/>
+      <rect x="48" y="82" width="8" height="13" rx="4" fill="#f5d6f0"/>
+      <rect x="58" y="82" width="8" height="13" rx="4" fill="#f5d6f0"/>
+      <rect x="68" y="75" width="8" height="13" rx="4" fill="#f5d6f0"/>
+      <path d="M24 62 Q10 55 15 75 Q18 85 26 78" stroke="url(#ug)" stroke-width="5" stroke-linecap="round" fill="none"/>
+      <text x="18" y="34" font-size="10" fill="#ff3fa4" opacity=".7">✦</text>
+      <text x="84" y="62" font-size="8" fill="#b57bff" opacity=".6">✦</text>
+    </svg>
+    <div>
+      <h1>UniVerse</h1>
+      <div class="header-sub">✦ FANFIC & PERSONAGENS ✦</div>
+    </div>
+  </header>
+
+  <!-- HOME -->
+  <div class="page active" id="page-home">
+    <div class="home-banner">
+      <span class="hb-emoji">🦄</span>
+      <h2>Bem-vinda!</h2>
+      <p>Crie personagens, converse e escreva fanfics de todos os gêneros.</p>
+    </div>
+    <div class="sec-title">Começar agora</div>
+    <div class="quick-grid">
+      <div class="qcard" onclick="goFanfic('BL')"><span class="qc-em">💙</span><div class="qc-t">Fanfic BL</div><div class="qc-d">Boys Love, rivais, intensidade</div></div>
+      <div class="qcard" onclick="goFanfic('GL')"><span class="qc-em">💜</span><div class="qc-t">Fanfic GL</div><div class="qc-d">Girls Love, princesas, paixão</div></div>
+      <div class="qcard" onclick="goFanfic('Hot')"><span class="qc-em">🔥</span><div class="qc-t">Fanfic Hot</div><div class="qc-d">Tensão, sensualidade, romance</div></div>
+      <div class="qcard" onclick="goFanfic('Dark')"><span class="qc-em">🖤</span><div class="qc-t">Dark Romance</div><div class="qc-d">Obsessão, sombra, vilões</div></div>
+    </div>
+    <div class="sec-title">Seus personagens</div>
+    <div id="home-chars"></div>
+  </div>
+
+  <!-- CHAT -->
+  <div class="page" id="page-chat">
+    <div class="chat-top">
+      <button class="back-btn" onclick="goBack()">‹</button>
+      <div class="ct-av" id="ct-av">🌙</div>
+      <div><div class="ct-name" id="ct-name">Personagem</div><div class="ct-status">● online</div></div>
+      <button class="export-btn" onclick="exportImg('chat')" title="Exportar como imagem">📷</button>
+    </div>
+    <div class="msgs" id="chat-msgs"></div>
+    <div class="inp-bar">
+      <textarea class="inp-ta" id="chat-inp" placeholder="Fale com seu personagem..." rows="1"
+        onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendChat()}"
+        oninput="aResize(this)"></textarea>
+      <button class="snd-btn" id="chat-snd" onclick="sendChat()">➤</button>
+    </div>
+  </div>
+
+  <!-- FANFIC -->
+  <div class="page" id="page-fanfic">
+    <div class="fanfic-top">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:7px;">
+        <div class="ftlabel" style="margin-bottom:0">Gênero ativo</div>
+        <button class="export-btn" onclick="exportImg('fanfic')" title="Exportar como imagem">📷</button>
+      </div>
+      <div class="gpills" id="gpills"></div>
+    </div>
+    <div class="msgs" id="fanfic-msgs">
+      <div style="text-align:center;padding:28px 18px;color:var(--text-dim);" data-welcome>
+        <div style="font-size:2.4rem;margin-bottom:10px;">📖</div>
+        <div style="font-size:0.82rem;line-height:1.7;">Escolha um gênero e descreva a fanfic. Continue a história enviando novas mensagens!</div>
+      </div>
+    </div>
+    <div class="inp-bar">
+      <textarea class="inp-ta" id="fanfic-inp" placeholder="Descreva sua fanfic..." rows="1"
+        onkeydown="if(event.key==='Enter'&&!event.shiftKey){event.preventDefault();sendFanfic()}"
+        oninput="aResize(this)"></textarea>
+      <button class="snd-btn" id="fanfic-snd" onclick="sendFanfic()">➤</button>
+    </div>
+  </div>
+
+  <!-- CHARACTERS -->
+  <div class="page" id="page-characters">
+    <div class="chars-hd">
+      <h2>Personagens</h2>
+      <button class="add-btn" onclick="openModal()">✦ Criar</button>
+    </div>
+    <div class="clist" id="clist"></div>
+  </div>
+
+  <!-- BOTTOM NAV -->
+  <nav class="bnav">
+    <button class="ni active" id="ni-home" onclick="goPage('home')">
+      <span class="nic">⌂</span><span>Início</span>
+    </button>
+    <button class="ni" id="ni-fanfic" onclick="goPage('fanfic')">
+      <span class="nic">📖</span><span>Fanfic</span>
+    </button>
+    <button class="ncenter" onclick="openModal()">＋</button>
+    <button class="ni" id="ni-chars" onclick="goPage('characters')">
+      <span class="nic">🌸</span><span>Personagens</span>
+    </button>
+    <button class="ni" id="ni-chat" onclick="goPage('chat')" style="position:relative">
+      <span class="nic">💬</span><span>Chat</span>
+    </button>
+  </nav>
+</div>
+
+<!-- MODAL -->
+<div class="overlay" id="overlay">
+  <div class="modal">
+    <div class="modal-handle"></div>
+    <h2>✦ Criar Personagem ✦</h2>
+    <div class="fg"><label>NOME</label><input type="text" id="m-name" placeholder="Ex: Kaito, Luna, Ares..."/></div>
+    <div class="fg"><label>TIPO</label>
+      <select id="m-gender">
+        <option value="masculino">Masculino</option>
+        <option value="feminino">Feminino</option>
+        <option value="não-binário">Não-binário / Andrógino</option>
+        <option value="vampiro">Vampiro</option>
+        <option value="demônio">Demônio / Sobrenatural</option>
+        <option value="vilão">Vilão</option>
+        <option value="herói">Herói / Protetor</option>
+      </select>
+    </div>
+    <div class="fg"><label>PERSONALIDADE</label>
+      <select id="m-pers">
+        <option value="arrogante e frio">Arrogante e Frio</option>
+        <option value="gentil e protetor">Gentil e Protetor</option>
+        <option value="misterioso e sombrio">Misterioso e Sombrio</option>
+        <option value="sedutor e provocador">Sedutor e Provocador</option>
+        <option value="doce e tímido">Doce e Tímido</option>
+        <option value="selvagem e intenso">Selvagem e Intenso</option>
+        <option value="elegante e manipulador">Elegante e Manipulador</option>
+        <option value="tsundere">Tsundere</option>
+        <option value="yandere">Yandere</option>
+      </select>
+    </div>
+    <div class="fg"><label>DESCRIÇÃO (opcional)</label><textarea id="m-desc" placeholder="Aparência, história, poderes..."></textarea></div>
+    <div class="fg">
+      <label>AVATAR</label>
+      <div class="avatar-tabs">
+        <button class="av-tab active" id="av-tab-emoji" onclick="switchAvTab('emoji')">😊 Emoji</button>
+        <button class="av-tab" id="av-tab-foto" onclick="switchAvTab('foto')">📷 Foto da Galeria</button>
+      </div>
+      <div id="av-panel-emoji"><div class="egrid" id="egrid"></div></div>
+      <div id="av-panel-foto" style="display:none">
+        <div class="photo-upload-area" id="photo-upload-area" onclick="document.getElementById('photo-file-input').click()">
+          <input type="file" id="photo-file-input" accept="image/*" style="display:none" onchange="handlePhotoUpload(event)"/>
+          <div id="photo-preview-wrap">
+            <div class="photo-placeholder">
+              <span style="font-size:2rem">📷</span>
+              <div style="font-size:0.8rem;color:var(--text-dim);margin-top:8px">Toque para escolher uma foto</div>
+              <div style="font-size:0.68rem;color:var(--text-dim);margin-top:4px;opacity:0.7">JPG, PNG, etc.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="mactions">
+      <button class="mcancl" onclick="closeModal()">Cancelar</button>
+      <button class="mcreate" onclick="createChar()">✦ Criar</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- EXPORT CARD (off-screen) -->
+<div id="export-card"></div>
+
+<script>
+// Stars
+(()=>{const c=document.getElementById('stars');for(let i=0;i<65;i++){const s=document.createElement('div');s.className='star';const sz=Math.random()*2.5+0.5;s.style.cssText=`width:${sz}px;height:${sz}px;top:${Math.random()*100}%;left:${Math.random()*100}%;--d:${Math.random()*4+2}s;animation-delay:${Math.random()*5}s`;c.appendChild(s);}})();
+
+// State
+let chars=JSON.parse(localStorage.getItem('uv3')||'[]');
+let activePage='home',prevPage='home',activeCharId=null;
+let chatHist=[],fanficHist=[],activeGenre='Romance',selEmoji='🌙',selPhoto=null,avMode='emoji';
+const EMOJIS=['🌙','⚡','🔥','💀','🌸','👑','🐺','🦋','🌹','❄️','🌊','🌑','🐉','🗡️','💜','🖤','🌺','🦊'];
+const GENRES=['Romance','BL','GL','Hot','Dark','Drama','Fantasia','Suspense'];
+
+function save(){localStorage.setItem('uv3',JSON.stringify(chars));}
+
+// Avatar tab switch
+function switchAvTab(tab){
+  avMode=tab;
+  document.getElementById('av-tab-emoji').classList.toggle('active',tab==='emoji');
+  document.getElementById('av-tab-foto').classList.toggle('active',tab==='foto');
+  document.getElementById('av-panel-emoji').style.display=tab==='emoji'?'':'none';
+  document.getElementById('av-panel-foto').style.display=tab==='foto'?'':'none';
+}
+
+// Photo upload
+function handlePhotoUpload(e){
+  const file=e.target.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=ev=>{
+    selPhoto=ev.target.result;
+    const wrap=document.getElementById('photo-preview-wrap');
+    wrap.innerHTML=`<div style="display:flex;flex-direction:column;align-items:center;">
+      <img src="${selPhoto}" class="photo-preview"/>
+      <div class="photo-change-hint">Toque para trocar a foto</div>
+    </div>`;
+  };
+  reader.readAsDataURL(file);
+}
+
+// Emoji grid
+(()=>{const g=document.getElementById('egrid');EMOJIS.forEach(e=>{const b=document.createElement('button');b.className='ebtn'+(e===selEmoji?' sel':'');b.textContent=e;b.onclick=()=>{selEmoji=e;document.querySelectorAll('.ebtn').forEach(x=>x.classList.remove('sel'));b.classList.add('sel');};g.appendChild(b);});})();
+
+// Genre pills
+(()=>{const c=document.getElementById('gpills');GENRES.forEach(g=>{const b=document.createElement('button');b.className='gpill'+(g===activeGenre?' active':'');b.textContent=g;b.onclick=()=>{activeGenre=g;document.querySelectorAll('.gpill').forEach(x=>x.classList.remove('active'));b.classList.add('active');};c.appendChild(b);});})();
+
+// Pages
+function goPage(p){
+  if(p==='chat'&&!activeCharId){goPage('characters');return;}
+  prevPage=activePage;activePage=p;
+  document.querySelectorAll('.page').forEach(x=>x.classList.remove('active'));
+  document.getElementById('page-'+p).classList.add('active');
+  document.querySelectorAll('.ni').forEach(x=>x.classList.remove('active'));
+  const map={home:'ni-home',fanfic:'ni-fanfic',characters:'ni-chars',chat:'ni-chat'};
+  if(map[p])document.getElementById(map[p]).classList.add('active');
+  if(p==='home')renderHome();
+  if(p==='characters')renderChars();
+}
+function goBack(){goPage(prevPage==='chat'?'home':prevPage);}
+function goFanfic(g){
+  activeGenre=g;
+  document.querySelectorAll('.gpill').forEach(b=>b.classList.toggle('active',b.textContent===g));
+  goPage('fanfic');
+}
+
+// Render home
+function renderHome(){
+  const el=document.getElementById('home-chars');
+  if(!chars.length){el.innerHTML=`<div class="empty-note"><span class="en-em">🌸</span>Nenhum personagem ainda.<br>Toque no <strong>+</strong> para criar!</div>`;return;}
+  el.innerHTML=chars.map(c=>`<div class="rc-item" onclick="startChat('${c.id}')"><div class="rc-av">${avHtml(c)}</div><div><div class="rc-name">${c.name}</div><div class="rc-sub">${c.gender} · ${c.personality}</div></div><span class="rc-arr">›</span></div>`).join('');
+}
+
+// Render chars
+function renderChars(){
+  const el=document.getElementById('clist');
+  if(!chars.length){el.innerHTML=`<div class="empty-st"><span>🌸</span>Nenhum personagem ainda.<br>Crie um com o botão acima!</div>`;return;}
+  el.innerHTML=chars.map(c=>`<div class="ccard" onclick="startChat('${c.id}')"><div class="cav">${avHtml(c)}</div><div><div class="cname">${c.name}</div><div class="ctype">${c.gender}</div><span class="ctag">${c.personality}</span></div><button class="cdel" onclick="delChar('${c.id}',event)">✕</button></div>`).join('');
+}
+
+// Start chat
+const GREET={
+  'arrogante e frio':'Você chegou. Não me faça esperar da próxima vez.',
+  'gentil e protetor':'Olá! Fico tão feliz que você esteja aqui 🌸',
+  'misterioso e sombrio':'*sorri levemente* ...Eu já sabia que você viria.',
+  'sedutor e provocador':'Bem-vinda. *apoia o queixo na mão* Estava me perguntando quando apareceria...',
+  'doce e tímido':'A-ah! Oi... *cora* que bom te ver.',
+  'selvagem e intenso':'*te encarar de cima* Interessante. Muito interessante.',
+  'elegante e manipulador':'*sorri suavemente* Que prazer. Finalmente podemos conversar.',
+  'tsundere':'N-não pense que eu fiquei te esperando! É que não tinha nada melhor pra fazer...',
+  'yandere':'*olha intensamente* Você finalmente veio... só eu posso estar perto de você.'
+};
+function startChat(id){
+  activeCharId=id;chatHist=[];
+  const c=chars.find(x=>x.id===id);if(!c)return;
+  const ctAv=document.getElementById('ct-av');
+  ctAv.innerHTML=avHtml(c);
+  document.getElementById('ct-name').textContent=c.name;
+  document.getElementById('chat-msgs').innerHTML='';
+  goPage('chat');
+  const g=GREET[c.personality]||`Olá, eu sou ${c.name}. Prazer em te conhecer.`;
+  addMsg('chat-msgs',g,c,'ai');
+  chatHist.push({role:'assistant',content:g});
+}
+
+function delChar(id,e){
+  e.stopPropagation();chars=chars.filter(c=>c.id!==id);
+  if(activeCharId===id)activeCharId=null;
+  save();renderChars();renderHome();
+}
+
+// Modal
+function openModal(){document.getElementById('overlay').classList.add('open');}
+function closeModal(){document.getElementById('overlay').classList.remove('open');}
+document.getElementById('overlay').addEventListener('click',e=>{if(e.target===document.getElementById('overlay'))closeModal();});
+
+function createChar(){
+  const name=document.getElementById('m-name').value.trim();
+  if(!name){alert('Digite um nome!');return;}
+  if(avMode==='foto'&&!selPhoto){alert('Escolha uma foto ou troque para Emoji!');return;}
+  const c={id:Date.now().toString(),name,
+    gender:document.getElementById('m-gender').value,
+    personality:document.getElementById('m-pers').value,
+    desc:document.getElementById('m-desc').value,
+    emoji:avMode==='foto'?null:selEmoji,
+    photo:avMode==='foto'?selPhoto:null};
+  chars.push(c);save();
+  document.getElementById('m-name').value='';
+  document.getElementById('m-desc').value='';
+  selPhoto=null;avMode='emoji';
+  // reset photo preview
+  document.getElementById('photo-preview-wrap').innerHTML=`<div class="photo-placeholder"><span style="font-size:2rem">📷</span><div style="font-size:0.8rem;color:var(--text-dim);margin-top:8px">Toque para escolher uma foto</div></div>`;
+  switchAvTab('emoji');
+  closeModal();startChat(c.id);
+}
+
+// Avatar helper: returns HTML for avatar (img or emoji)
+function avHtml(c,size=''){
+  if(c&&c.photo) return `<img src="${c.photo}" style="width:100%;height:100%;object-fit:cover;border-radius:50%;" />`;
+  return c?c.emoji:'🌸';
+}
+
+// Messages
+function addMsg(cid,text,char,role){
+  const msgs=document.getElementById(cid);
+  const wp=msgs.querySelector('[data-welcome]');if(wp)wp.remove();
+  const div=document.createElement('div');div.className='msg '+role;
+  const av=role==='ai'?(char?avHtml(char):'🦄'):'🌸';
+  const nm=role==='ai'?(char?char.name:'UniVerse'):'Você';
+  div.innerHTML=`<div class="mav">${av}</div><div class="mbody"><div class="mname">${nm}</div><div class="bbl">${fmt(text)}</div></div>`;
+  msgs.appendChild(div);msgs.scrollTop=msgs.scrollHeight;
+}
+function addTyping(cid){
+  const msgs=document.getElementById(cid);
+  const d=document.createElement('div');d.className='msg ai';d.id='tp-'+cid;
+  d.innerHTML=`<div class="mav">🦄</div><div class="mbody"><div class="bbl"><div class="tdots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div></div></div>`;
+  msgs.appendChild(d);msgs.scrollTop=msgs.scrollHeight;
+}
+function remTyping(cid){const el=document.getElementById('tp-'+cid);if(el)el.remove();}
+function fmt(t){return t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/\*(.+?)\*/g,'<em>$1</em>').replace(/\n/g,'<br>');}
+function aResize(el){el.style.height='auto';el.style.height=Math.min(el.scrollHeight,100)+'px';}
+
+// API
+async function callAI(messages,system){
+  const r=await fetch("https://api.anthropic.com/v1/messages",{
+    method:"POST",headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({model:"claude-sonnet-4-20250514",max_tokens:1000,system,messages})
+  });
+  const d=await r.json();
+  if(d.content&&d.content[0])return d.content[0].text;
+  throw new Error('err');
+}
+
+async function sendChat(){
+  const inp=document.getElementById('chat-inp');const text=inp.value.trim();if(!text)return;
+  inp.value='';aResize(inp);
+  const c=chars.find(x=>x.id===activeCharId);
+  addMsg('chat-msgs',text,null,'user');chatHist.push({role:'user',content:text});
+  document.getElementById('chat-snd').disabled=true;addTyping('chat-msgs');
+  const sys=c?`Você é ${c.name}, personagem de roleplay.
+Tipo: ${c.gender}. Personalidade: ${c.personality}.${c.desc?'\nDescrição: '+c.desc:''}
+Fale em 1ª pessoa como ${c.name}, use *ações entre asteriscos*, seja dramático e expressivo, responda em português BR, não quebre o personagem.`
+    :'Assistente criativo de roleplay e fanfics. Responda em português BR de forma envolvente.';
+  try{const r=await callAI(chatHist,sys);remTyping('chat-msgs');addMsg('chat-msgs',r,c,'ai');chatHist.push({role:'assistant',content:r});}
+  catch{remTyping('chat-msgs');addMsg('chat-msgs','✦ Erro de conexão.',c,'ai');}
+  document.getElementById('chat-snd').disabled=false;
+}
+
+async function sendFanfic(){
+  const inp=document.getElementById('fanfic-inp');const text=inp.value.trim();if(!text)return;
+  inp.value='';aResize(inp);
+  addMsg('fanfic-msgs',text,null,'user');fanficHist.push({role:'user',content:text});
+  document.getElementById('fanfic-snd').disabled=true;addTyping('fanfic-msgs');
+  const sys=`Escritora criativa de fanfics do gênero ${activeGenre} em português BR.
+Estilo literário fluido, diálogos naturais, descrições ricas.
+${activeGenre==='Hot'?'Conteúdo sensual e sugestivo, escreva com tensão e intensidade.':''}
+${activeGenre==='BL'?'BL: romance entre homens, tensão emocional e química intensa.':''}
+${activeGenre==='GL'?'GL: romance entre mulheres, sentimentos profundos e intimidade.':''}
+${activeGenre==='Dark'?'Dark romance: obsessão, poder, sombra. Explore limites emocionais.':''}
+Continue de onde parou quando pedirem.`;
+  try{const r=await callAI(fanficHist,sys);remTyping('fanfic-msgs');addMsg('fanfic-msgs',r,null,'ai');fanficHist.push({role:'assistant',content:r});}
+  catch{remTyping('fanfic-msgs');addMsg('fanfic-msgs','✦ Erro de conexão.',null,'ai');}
+  document.getElementById('fanfic-snd').disabled=false;
+}
+
+// EXPORT AS IMAGE
+async function exportImg(panel){
+  const isFanfic=panel==='fanfic';
+  const msgsEl=document.getElementById(isFanfic?'fanfic-msgs':'chat-msgs');
+  const msgs=msgsEl.querySelectorAll('.msg');
+  if(!msgs.length){showToast('Nenhuma mensagem para exportar!');return;}
+  const c=activeCharId?chars.find(x=>x.id===activeCharId):null;
+  const panelTitle=isFanfic?`Fanfic · ${activeGenre}`:(c?c.name:'Chat');
+  const panelEmoji=isFanfic?'📖':(c?c.emoji:'🦄');
+  let msgsHtml='';
+  msgs.forEach(m=>{
+    const isUser=m.classList.contains('user');
+    const av=m.querySelector('.mav')?.textContent||'🌸';
+    const name=m.querySelector('.mname')?.textContent||'';
+    const bbl=m.querySelector('.bbl')?.innerHTML||'';
+    msgsHtml+=`<div class="ec-msg ${isUser?'user':'ai'}"><div class="ec-mav">${av}</div><div class="ec-mbody"><div class="ec-mname">${name}</div><div class="ec-bbl">${bbl}</div></div></div>`;
+  });
+  const card=document.getElementById('export-card');
+  card.innerHTML=`
+    <div class="ec-header"><div class="ec-av">${c&&c.photo?`<img src="${c.photo}" style="width:100%;height:100%;object-fit:cover;border-radius:50%"/>`:panelEmoji}</div><div><div class="ec-title">${panelTitle}</div><div class="ec-sub">● UniVerse</div></div><div class="ec-logo">✦ UNIVERSE</div></div>
+    <div class="ec-msgs">${msgsHtml}</div>
+    <div class="ec-footer">✦ UniVerse · Fanfic & Personagens ✦</div>`;
+  showToast('⏳ Gerando imagem...');
+  await new Promise(r=>setTimeout(r,120));
+  try{
+    const canvas=await html2canvas(card,{backgroundColor:'#0a0008',scale:2,useCORS:true,logging:false});
+    const link=document.createElement('a');
+    const ts=new Date().toISOString().slice(0,16).replace('T','_').replace(/:/g,'-');
+    link.download=`universe_${panelTitle.replace(/[^a-zA-Z0-9]/g,'_')}_${ts}.png`;
+    link.href=canvas.toDataURL('image/png');link.click();
+    showToast('✦ Imagem salva!');
+  }catch{showToast('Erro ao exportar.');}
+}
+
+function showToast(msg){
+  const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');
+  clearTimeout(t._to);t._to=setTimeout(()=>t.classList.remove('show'),3000);
+}
+
+renderHome();
+</script>
+</body>
+</html>
